@@ -51,7 +51,7 @@ def train_five_fold(train_path, model_name):
         # Set up the training arguments. These worked on a P40 in colab, used about 10GB
         training_args = TrainingArguments(per_device_train_batch_size=8,
             gradient_accumulation_steps=1,
-            # fp16=True,
+            fp16=True,
             output_dir=f"pombe_curation_fold{k}",
             evaluation_strategy="steps",
             eval_steps=200,
@@ -72,9 +72,6 @@ def train_five_fold(train_path, model_name):
             )
 
         trainer.train()
-
-    exit()
-    dataset = datasets.load_dataset("parquet", data_files={"train":"inter_train.pkl", "val":"inter_val.pkl", "test":"inter_test.pkl"})
 
 
     
