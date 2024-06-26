@@ -53,7 +53,7 @@ def train_five_fold(train_path, model_name):
             gradient_accumulation_steps=1,
             fp16=True,
             output_dir=f"pombe_curation_fold{k}",
-            evaluation_strategy="steps",
+            eval_strategy="steps",
             eval_steps=200,
             run_name=f"pombe_curation_fold{k}",
             report_to='wandb',
