@@ -4,8 +4,14 @@ WORKDIR /workdir
 
 COPY requirements.txt .
 
-RUN pip install polars transformers datasets evaluate "numpy<2" scikit-learn
+RUN pip install polars transformers datasets evaluate "numpy<2" scikit-learn wandb huggingface_hub
 
 COPY fetch_data.sh .
 COPY process_data.py .
 COPY five_fold.py .
+COPY run.sh .
+
+ENV WANDB_PROJECT "pombe_curation_model"
+ENV WANDB_LOG_MODEL "checkpoint"
+
+CMD ["bash", "run.sh"]
