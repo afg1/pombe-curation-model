@@ -116,7 +116,7 @@ def train_five_fold(train_path, model_name, fold_number, max_length=-1, hub_id=N
 
 if __name__ == "__main__":
     parser = ap.ArgumentParser()
-    parser.add_argument("fold_number", default=0, type='int')
+    parser.add_argument("fold_number", default=0, type=int)
     args = parser.parse_args()
 
     this_pod = runpod.get_pods()[0]
