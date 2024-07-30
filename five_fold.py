@@ -11,6 +11,7 @@ import huggingface_hub
 import datasets
 import os
 import runpod
+import argparse as ap
 
 runpod.api_key = os.getenv("RUNPOD_API_KEY")
 
@@ -44,7 +45,7 @@ def generate_train_test_splits(data_path, train_fraction, test_path, train_path)
 
 
 
-def train_five_fold(train_path, model_name, max_length=-1, hub_id=None):
+def train_five_fold(train_path, model_name, fold_number, max_length=-1, hub_id=None):
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2)
 
@@ -68,23 +69,29 @@ def train_five_fold(train_path, model_name, max_length=-1, hub_id=None):
     
 
     for k, (train_idxs, val_idxs) in enumerate(splits):
+        if k != fold_number:
+            if k < fold_number: 
+                continue
+            else:
+                break
+
         model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2)
         fold_dataset = tokenized_datasets.copy()
         fold_dataset["test"] = tokenized_datasets["train"].select(val_idxs)
         fold_dataset["train"] = tokenized_datasets["train"].select(train_idxs)
 
-        wandb.init(name=f"pombe_curation_fold{k}")
+        wandb.init(name=f"pombe_curation_fold{fold_number}")
 
         # Set up the training arguments. These worked on a P40 in colab, used about 10GB
         training_args = TrainingArguments(per_device_train_batch_size=16,
             per_device_eval_batch_size=16,
             gradient_accumulation_steps=1,
             fp16=True,
-            output_dir=f"pombe_curation_fold{k}",
+            output_dir=f"pombe_curation_fold{fold_number}",
             eval_strategy="steps",
             eval_steps=200,
             logging_steps=100,
-            run_name=f"pombe_curation_fold{k}",
+            run_name=f"pombe_curation_fold{fold_number}",
             report_to='wandb',
             push_to_hub=True,
             hub_model_id=hub_id,
@@ -108,6 +115,10 @@ def train_five_fold(train_path, model_name, max_length=-1, hub_id=None):
 
 
 if __name__ == "__main__":
+    parser = ap.ArgumentParser()
+    parser.add_argument("fold_number", default=0, type='int')
+    args = parser.parse_args()
+
     this_pod = runpod.get_pods()[0]
     data_path = "canto_pombe_pubs.parquet"
     
@@ -117,7 +128,7 @@ if __name__ == "__main__":
     hub_id = os.getenv("HF_MODEL_OUTPUT_ID", "afg1/pombe_curation_model")
     try:
         generate_train_test_splits(data_path, tt_split_frac, "test_data.parquet", "train_data.parquet")
-        train_five_fold("train_data.parquet", base_model, max_length=max_length, hub_id=hub_id)
+        train_five_fold("train_data.parquet", base_model, args.fold_number max_length=max_length, hub_id=hub_id)
     except Exception as e:
         print("Caught an exception")
         print(e)
