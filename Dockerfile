@@ -11,6 +11,8 @@ COPY process_data.py .
 COPY five_fold.py .
 COPY run.sh .
 
+RUN pip install "accelerate>=0.21.0"
+
 ENV WANDB_PROJECT "pombe_curation_model"
 ENV WANDB_LOG_MODEL "checkpoint"
 
