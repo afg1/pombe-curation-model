@@ -41,7 +41,7 @@ def generate_train_test_splits(data_path, train_fraction, test_path, train_path)
 
 
 
-def train_five_fold(train_path, model_name, max_length=-1):
+def train_five_fold(train_path, model_name, max_length=-1, hub_id=None):
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2)
 
@@ -79,7 +79,7 @@ def train_five_fold(train_path, model_name, max_length=-1):
             run_name=f"pombe_curation_fold{k}",
             report_to='wandb',
             push_to_hub=True,
-            hub_model_id="afg1/pombe_curation_model",
+            hub_model_id=hub_id,
             gradient_checkpointing=True,
             hub_private_repo=True,
             num_train_epochs=1.0)
@@ -104,5 +104,6 @@ if __name__ == "__main__":
     base_model = os.getenv("BASE_MODEL", "allenai/longformer-base-4096")
     max_length = int(os.getenv("MAX_LENGTH", "-1"))
     tt_split_frac = float(os.getenv("TRAIN_TEST_SPLIT_FRAC", "0.8"))
+    hub_id = os.getenv("HF_MODEL_OUTPUT_ID", "afg1/pombe_curation_model")
     generate_train_test_splits(data_path, tt_split_frac, "test_data.parquet", "train_data.parquet")
     train_five_fold("train_data.parquet", base_model, max_length=max_length)
