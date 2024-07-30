@@ -41,10 +41,15 @@ def generate_train_test_splits(data_path, train_fraction, test_path, train_path)
 
 
 
-def train_five_fold(train_path, model_name):
+def train_five_fold(train_path, model_name, max_length=-1):
     tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2)
+
+    if max_length < 0:
+        ## -2 is insurance against CLS and EOS tokens
+        max_length = model.config.max_position_embeddings - 2
     def tokenize_function(examples):
-        return tokenizer(str(examples["abstract"]), padding="max_length", max_length=1024)
+        return tokenizer(str(examples["abstract"]), padding="max_length", max_length=max_length)
     
     kf = KFold(5)
     train_data = datasets.load_dataset("parquet", data_files={"train":train_path})
@@ -52,7 +57,6 @@ def train_five_fold(train_path, model_name):
 
     splits = kf.split(np.zeros(tokenized_datasets["train"].num_rows))
 
-    model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2)
     metric = evaluate.load("accuracy")
     def compute_metrics(eval_pred):
         logits, labels = eval_pred
@@ -91,20 +95,14 @@ def train_five_fold(train_path, model_name):
         trainer.train()
 
 
-    
-
-
-    
-
-    
-    
-
-    
-
 
 
 
 if __name__ == "__main__":
     data_path = "canto_pombe_pubs.parquet"
-    generate_train_test_splits(data_path, 0.8, "test_data.parquet", "train_data.parquet")
-    train_five_fold("train_data.parquet", "allenai/longformer-base-4096")
+    
+    base_model = os.getenv("BASE_MODEL", "allenai/longformer-base-4096")
+    max_length = int(os.getenv("MAX_LENGTH", "-1"))
+    tt_split_frac = float(os.getenv("TRAIN_TEST_SPLIT_FRAC", "0.8"))
+    generate_train_test_splits(data_path, tt_split_frac, "test_data.parquet", "train_data.parquet")
+    train_five_fold("train_data.parquet", base_model, max_length=max_length)
