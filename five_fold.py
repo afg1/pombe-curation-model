@@ -55,7 +55,7 @@ def train_five_fold(train_path, model_name, fold_number, random_seed=None, max_l
     def tokenize_function(examples):
         return tokenizer(str(examples["abstract"]), padding="max_length", max_length=max_length)
     
-    kf = KFold(5, random_state=random_seed)
+    kf = KFold(5, random_state=random_seed, shuffle=True)
     train_data = datasets.load_dataset("parquet", data_files={"train":train_path})
     tokenized_datasets = train_data.map(tokenize_function)
 
