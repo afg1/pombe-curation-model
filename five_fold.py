@@ -90,6 +90,7 @@ def train_five_fold(train_path, model_name, max_length=-1, hub_id=None):
         trainer = Trainer(
             model=model,
             args=training_args,
+            tokenizer=tokenizer,
             train_dataset=fold_dataset['train'],
             eval_dataset=fold_dataset['test'],
             compute_metrics=compute_metrics,
