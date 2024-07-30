@@ -76,6 +76,7 @@ def train_five_fold(train_path, model_name, max_length=-1, hub_id=None):
             output_dir=f"pombe_curation_fold{k}",
             eval_strategy="steps",
             eval_steps=200,
+            logging_steps=100,
             run_name=f"pombe_curation_fold{k}",
             report_to='wandb',
             push_to_hub=True,
