@@ -31,7 +31,12 @@ def generate_train_test_splits(data_path, train_fraction, test_path, train_path)
     train, test = train_test_split(df, train_size=train_fraction)
 
     train.write_parquet(train_path)
+    ## Important to note the test set is left untouched, not used in the five fold at all
     test.write_parquet(test_path)
+
+    dataset = datasets.load_dataset("parquet", {"train": train_path, "test":test_path})
+    dataset.push_to_hub("afg1/pombe-canto-data", private=True)
+
 
 
 
