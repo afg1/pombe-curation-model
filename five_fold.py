@@ -10,6 +10,9 @@ import wandb
 import huggingface_hub
 import datasets
 import os
+import runpod
+
+runpod.api_key = os.getenv("RUNPOD_API_KEY")
 
 ## Login to stuff
 wandb_key = os.getenv("WANDB_KEY")
@@ -105,11 +108,18 @@ def train_five_fold(train_path, model_name, max_length=-1, hub_id=None):
 
 
 if __name__ == "__main__":
+    this_pod = runpod.get_pods()[0]
     data_path = "canto_pombe_pubs.parquet"
     
     base_model = os.getenv("BASE_MODEL", "allenai/longformer-base-4096")
     max_length = int(os.getenv("MAX_LENGTH", "-1"))
     tt_split_frac = float(os.getenv("TRAIN_TEST_SPLIT_FRAC", "0.8"))
     hub_id = os.getenv("HF_MODEL_OUTPUT_ID", "afg1/pombe_curation_model")
-    generate_train_test_splits(data_path, tt_split_frac, "test_data.parquet", "train_data.parquet")
-    train_five_fold("train_data.parquet", base_model, max_length=max_length)
+    try:
+        generate_train_test_splits(data_path, tt_split_frac, "test_data.parquet", "train_data.parquet")
+        train_five_fold("train_data.parquet", base_model, max_length=max_length)
+    except Exception as e:
+        print("Caught an exception")
+        print(e)
+        
+    runpod.stop_pod(this_pod.id)
