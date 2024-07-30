@@ -45,7 +45,7 @@ def generate_train_test_splits(data_path, train_fraction, test_path, train_path)
 
 
 
-def train_five_fold(train_path, model_name, fold_number, max_length=-1, hub_id=None):
+def train_five_fold(train_path, model_name, fold_number, random_seed=None, max_length=-1, hub_id=None):
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2)
 
@@ -55,7 +55,7 @@ def train_five_fold(train_path, model_name, fold_number, max_length=-1, hub_id=N
     def tokenize_function(examples):
         return tokenizer(str(examples["abstract"]), padding="max_length", max_length=max_length)
     
-    kf = KFold(5)
+    kf = KFold(5, random_state=random_seed)
     train_data = datasets.load_dataset("parquet", data_files={"train":train_path})
     tokenized_datasets = train_data.map(tokenize_function)
 
@@ -117,6 +117,7 @@ def train_five_fold(train_path, model_name, fold_number, max_length=-1, hub_id=N
 if __name__ == "__main__":
     parser = ap.ArgumentParser()
     parser.add_argument("fold_number", default=0, type=int)
+    parser.add_argument("seed", default=1337, type=int)
     args = parser.parse_args()
 
     this_pod = runpod.get_pods()[0]
@@ -128,7 +129,7 @@ if __name__ == "__main__":
     hub_id = os.getenv("HF_MODEL_OUTPUT_ID", "afg1/pombe_curation_model")
     try:
         generate_train_test_splits(data_path, tt_split_frac, "test_data.parquet", "train_data.parquet")
-        train_five_fold("train_data.parquet", base_model, args.fold_number, max_length=max_length, hub_id=hub_id)
+        train_five_fold("train_data.parquet", base_model, args.fold_number, random_seed=args.seed, max_length=max_length, hub_id=hub_id)
     except Exception as e:
         print("Caught an exception")
         print(e)
