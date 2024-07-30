@@ -128,7 +128,7 @@ if __name__ == "__main__":
     hub_id = os.getenv("HF_MODEL_OUTPUT_ID", "afg1/pombe_curation_model")
     try:
         generate_train_test_splits(data_path, tt_split_frac, "test_data.parquet", "train_data.parquet")
-        train_five_fold("train_data.parquet", base_model, args.fold_number max_length=max_length, hub_id=hub_id)
+        train_five_fold("train_data.parquet", base_model, args.fold_number, max_length=max_length, hub_id=hub_id)
     except Exception as e:
         print("Caught an exception")
         print(e)
