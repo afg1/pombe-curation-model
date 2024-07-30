@@ -65,6 +65,7 @@ def train_five_fold(train_path, model_name, max_length=-1, hub_id=None):
     
 
     for k, (train_idxs, val_idxs) in enumerate(splits):
+        model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2)
         fold_dataset = tokenized_datasets.copy()
         fold_dataset["test"] = tokenized_datasets["train"].select(val_idxs)
         fold_dataset["train"] = tokenized_datasets["train"].select(train_idxs)
