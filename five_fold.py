@@ -6,6 +6,18 @@ from transformers import AutoModelForSequenceClassification, TrainingArguments, 
 import evaluate 
 import datasets
 import numpy as np
+import wandb
+import huggingface_hub
+import datasets
+import os
+
+## Login to stuff
+wandb_key = os.getenv("WANDB_KEY")
+wandb.login(key=wandb_key)
+
+hf_key = os.getenv("HF_KEY")
+huggingface_hub.login(token=hf_key)
+
 
 def generate_train_test_splits(data_path, train_fraction, test_path, train_path):
     """
