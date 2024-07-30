@@ -70,6 +70,8 @@ def train_five_fold(train_path, model_name, max_length=-1, hub_id=None):
         fold_dataset["test"] = tokenized_datasets["train"].select(val_idxs)
         fold_dataset["train"] = tokenized_datasets["train"].select(train_idxs)
 
+        wandb.init(name=f"pombe_curation_fold{k}")
+
         # Set up the training arguments. These worked on a P40 in colab, used about 10GB
         training_args = TrainingArguments(per_device_train_batch_size=16,
             per_device_eval_batch_size=16,
