@@ -134,4 +134,4 @@ if __name__ == "__main__":
         print("Caught an exception")
         print(e)
 
-    runpod.stop_pod(this_pod.id)
+    runpod.stop_pod(this_pod['id'])
