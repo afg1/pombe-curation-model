@@ -53,7 +53,7 @@ def train_five_fold(train_path, model_name, fold_number, random_seed=None, max_l
         ## -2 is insurance against CLS and EOS tokens
         max_length = model.config.max_position_embeddings - 2
     def tokenize_function(examples):
-        return tokenizer(str(examples["abstract"]), padding="max_length", max_length=max_length)
+        return tokenizer(str(examples["abstract"]), padding="max_length", max_length=max_length, truncation=True)
     
     kf = KFold(5, random_state=random_seed, shuffle=True)
     train_data = datasets.load_dataset("parquet", data_files={"train":train_path})
@@ -118,6 +118,7 @@ if __name__ == "__main__":
     parser = ap.ArgumentParser()
     parser.add_argument("fold_number", default=0, type=int)
     parser.add_argument("seed", default=1337, type=int)
+    parser.add_argument("--stop", default=False, action='store_true')
     args = parser.parse_args()
 
     this_pod = runpod.get_pods()[0]
@@ -134,4 +135,5 @@ if __name__ == "__main__":
         print("Caught an exception")
         print(e)
 
-    runpod.stop_pod(this_pod['id'])
+    if args.stop:
+        runpod.stop_pod(this_pod['id'])
