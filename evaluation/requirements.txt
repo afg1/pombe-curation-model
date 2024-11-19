@@ -1,0 +1,6 @@
+transformers
+evaluate
+datasets
+huggingface_hub
+scipy
+runpod
